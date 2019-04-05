@@ -9,7 +9,7 @@ Pytorch implementation of Block Neural Autoregressive Flow based on our paper:
 Optional for visualization and plotting: ``numpy``, ``matplotlib`` and ``tensorboardX``
 
 ## Structure
-* [bnaf.py](https://github.com/nicola-decao/BNAF/blob/master/banf.py): Implementation of Block Neural Normalzing Flow.
+* [bnaf.py](https://github.com/nicola-decao/BNAF/blob/master/bnaf.py): Implementation of Block Neural Normalzing Flow.
 * [optim](https://github.com/nicola-decao/BNAF/tree/master/optim): A custom extension of `torch.optim.Adam` and `torch.optim.Adamax` with Polyak averaging. A custom extension of `torch.optim.lr_scheduler.ReduceLROnPlateau` with callbacks.
 * [toy2d.py](https://github.com/nicola-decao/BNAF/blob/master/toy2d.py): Experiments of 2d toy task (density estimation and energy matching).
 * [density_estimation.py](https://github.com/nicola-decao/BNAF/blob/master/density_estimation.py): Experiments on density estimation on real datasets.
