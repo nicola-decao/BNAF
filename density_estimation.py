@@ -97,8 +97,8 @@ def create_model(args, verbose=False):
 
 def save_model(model, optimizer, epoch, args):
     def f():
-        print('Saving model..')
         if args.save:
+            print('Saving model..')
             torch.save({
                 'model': model.state_dict(),
                 'optimizer': optimizer.state_dict(),
@@ -217,9 +217,9 @@ def main():
     parser.add_argument('--expname', type=str, default='')
     parser.add_argument('--load', type=str, default=None)
     parser.add_argument('--save', action='store_true')
-    parser.add_argument('--tensorboard', type=str, default='../tensorboard_runs')
+    parser.add_argument('--tensorboard', type=str, default='tensorboard')
     
-    args, _ = parser.parse_known_args()
+    args = parser.parse_args()
 
     print('Arguments:')
     pprint.pprint(args.__dict__)

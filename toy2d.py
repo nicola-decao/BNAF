@@ -180,7 +180,7 @@ def main():
     parser.add_argument('--savefig', action='store_true')
     parser.add_argument('--reduce_extreme', action='store_true')
 
-    args, _ = parser.parse_known_args()
+    args = parser.parse_args()
 
     print('Arguments:')
     pprint.pprint(args.__dict__)
