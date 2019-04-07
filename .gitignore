@@ -102,3 +102,13 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# data and runs
+checkpoint/
+data/BSDS300/
+data/gas/
+data/hepmass/
+data/miniboone/
+data/power/
+tensorboard/
+
