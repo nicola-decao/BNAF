@@ -45,7 +45,7 @@ class BNAF(torch.nn.Sequential):
             ``a * x + (1 - a) * f(x)`` where ``a`` is a learnable parameter.
         """
         
-        super(BNAF, self).__init__(*args, **kwargs)
+        super(BNAF, self).__init__(*args)
         
         self.res = res
         
@@ -91,13 +91,13 @@ class Permutation(torch.nn.Module):
     Module that outputs a permutation of its input.
     """
     
-    def __init__(self, in_features : int, p : List = None):
+    def __init__(self, in_features : int, p : list = None):
         """
         Parameters
         ----------
         in_features : ``int``, required.
             The number of input features.
-        p : ``List`` or ``str``, optional (default = None)
+        p : ``list`` or ``str``, optional (default = None)
             The list of indeces that indicate the permutation. When ``p`` is not a
             list, if ``p = 'flip'``the tensor is reversed, if ``p = None`` a random 
             permutation is applied.

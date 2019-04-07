@@ -5,3 +5,4 @@ tar -zxvf data.tar.gz
 rm -rf data/mnist/
 rm -rf data/cifar10/
 rm data.tar.gz
+mkdir checkpoint

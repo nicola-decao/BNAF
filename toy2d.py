@@ -111,7 +111,7 @@ def save(model, optimizer, path):
         }, path)
 
 
-def plot_density2d(model, args, limit=4, step=0.01, reduce_extreme=False):
+def plot_density2d(model, args, limit=4, step=0.01):
 
     grid = torch.Tensor([[a, b] for a in np.arange(-limit, limit, step) for b in np.arange(-limit, limit, step)])
     grid_dataset = torch.utils.data.TensorDataset(grid.to(args.device))
@@ -122,8 +122,8 @@ def plot_density2d(model, args, limit=4, step=0.01, reduce_extreme=False):
     
     prob = prob.view(int(2 * limit / step), int(2 * limit / step)).t()
 
-    if reduce_extreme:
-        prob = prob.clamp(max=y.mean() + 2 * y.std())
+    if args.reduce_extreme:
+        prob = prob.clamp(max=prob.mean() + 3 * prob.std())
 
     plt.figure(figsize=(12, 12))
     plt.imshow(prob.cpu().data.numpy(), extent=(-limit, limit, -limit, limit))
@@ -157,27 +157,28 @@ def plot_energy2d(model, args, limit=4, step=0.05, resolution=(10000, 10000)):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--device', type=str, default='cuda:0')
-    parser.add_argument('--dataset', type=str, default='t1',
+    parser.add_argument('--dataset', type=str, default='8gaussians',
                         choices=['8gaussians', '2spirals', 'checkerboard', 't1', 't2', 't3', 't4'])
-    parser.add_argument('--experiment', type=str, default='energy2d',
+    parser.add_argument('--experiment', type=str, default='density2d',
                         choices=['density2d', 'energy2d'])
 
-    parser.add_argument('--learning_rate', type=float, default=1e-2)
+    parser.add_argument('--learning_rate', type=float, default=1e-1)
     parser.add_argument('--batch_dim', type=int, default=200)
     parser.add_argument('--clip_norm', type=float, default=.1)
-    parser.add_argument('--steps', type=int, default=15000)
+    parser.add_argument('--steps', type=int, default=20000)
     
     parser.add_argument('--patience', type=int, default=2000)
     parser.add_argument('--decay', type=float, default=0.5)
 
     parser.add_argument('--flows', type=int, default=1)
-    parser.add_argument('--layers', type=int, default=2)
+    parser.add_argument('--layers', type=int, default=3)
     parser.add_argument('--hidden_dim', type=int, default=50)
 
     parser.add_argument('--expname', type=str, default='')
     parser.add_argument('--load', type=str, default=None)
     parser.add_argument('--save', action='store_true')
     parser.add_argument('--savefig', action='store_true')
+    parser.add_argument('--reduce_extreme', action='store_true')
 
     args, _ = parser.parse_known_args()
 
