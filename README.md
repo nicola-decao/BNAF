@@ -36,6 +36,8 @@ python toy2d.py --dataset 8gaussians \    # which dataset to use
                 --savefig                 # save the density plot on disk
 ```
 
+![Imgur](https://i.imgur.com/DWVGsyn.jpg)
+
 #### Run 2D toy energy matching
 This example runs energy matching on the `t1` function using 1 flow of BNAF with 2 layers and 100 hidden units (`50 * 2` since the data dimensionality is 2).
 ```
@@ -47,6 +49,8 @@ python toy2d.py --dataset t1 \            # which dataset to use
                 --save                    # save the model after training
                 --savefig                 # save the density plot on disk
 ```
+
+![Imgur](https://i.imgur.com/o1QR3XO.jpg)
 
 #### Run real dataset density estimation
 This example runs density estimation on the `MINIBOONE` dataset using 5 flows of BNAF with 0 layers.
