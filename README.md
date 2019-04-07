@@ -39,9 +39,9 @@ python toy2d.py --dataset 8gaussians \    # which dataset to use
 ![Imgur](https://i.imgur.com/DWVGsyn.jpg)
 
 #### Run 2D toy energy matching
-This example runs energy matching on the `t1` function using 1 flow of BNAF with 2 layers and 100 hidden units (`50 * 2` since the data dimensionality is 2).
+This example runs energy matching on the `t4` function using 1 flow of BNAF with 2 layers and 100 hidden units (`50 * 2` since the data dimensionality is 2).
 ```
-python toy2d.py --dataset t1 \            # which dataset to use
+python toy2d.py --dataset t4 \            # which dataset to use
                 --experiment energy2d \   # which experiment to run
                 --flows 1 \               # BNAF flows to concatenate
                 --layers 2 \              # layers for each flow of BNAF
