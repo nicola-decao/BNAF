@@ -1,6 +1,6 @@
 # BNAF
 Pytorch implementation of Block Neural Autoregressive Flow based on our paper:
-> De Cao Nicola, Titov Ivan and Aziz Waziz, [Block Neural Autoregressive Flow]() (2019)
+> De Cao Nicola, Titov Ivan and Aziz Wilker, [Block Neural Autoregressive Flow]() (2019)
 
 ## Requirements
 * **``python>=3.6``** (it will probably work on older versions but I have not tested on them)
@@ -75,7 +75,7 @@ BibTeX format:
   title={Block Neural Autoregressive Flow},
   author={De Cao, Nicola and
           Titov, Ivan and
-          Aziz Waziz},
+          Aziz, Wilker},
   journal={arXiv preprint arXiv:TODO},
   year={2019}
 }
