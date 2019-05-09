@@ -64,7 +64,7 @@ python density_estimation.py --dataset miniboone \  # which dataset to use
 
 ## Citation
 ```
-De Cao Nicola, Titov Ivan, Aziz Waziz,
+De Cao Nicola, Titov Ivan, Aziz Wilker,
 Block Neural Autoregressive Flow,
 arXiv preprint arXiv:TODO (2019).
 ```
