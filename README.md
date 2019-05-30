@@ -66,7 +66,7 @@ python density_estimation.py --dataset miniboone \  # which dataset to use
 ```
 De Cao Nicola, Titov Ivan, Aziz Wilker,
 Block Neural Autoregressive Flow,
-arXiv preprint arXiv:1904.04676 (2019).
+35th Conference on Uncertainty in Artificial Intelligence (UAI19) (2019).
 ```
 
 BibTeX format:
@@ -76,7 +76,7 @@ BibTeX format:
   author={De Cao, Nicola and
           Titov, Ivan and
           Aziz, Wilker},
-  journal={arXiv preprint arXiv:1904.04676},
+  journal={35th Conference on Uncertainty in Artificial Intelligence (UAI19)},
   year={2019}
 }
 ```
