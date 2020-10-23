@@ -196,7 +196,7 @@ class MaskedWeight(torch.nn.Module):
         
         wpl = self._diag_weight + self._weight - 0.5 * torch.log(w_squared_norm) 
 
-        return w.t(), wpl.t()[self.mask_d.byte().t()].view(
+        return w.t(), wpl.t()[self.mask_d.bool().t()].view(
             self.dim, self.in_features // self.dim, self.out_features // self.dim)
 
 
