@@ -1,15 +1,14 @@
-
 import torch
 import math
 
 
 class Sequential(torch.nn.Sequential):
     """
-    Class that extends ``torch.nn.Sequential`` for computing the output of 
+    Class that extends ``torch.nn.Sequential`` for computing the output of
     the function alongside with the log-det-Jacobian of such transformation.
     """
-    
-    def forward(self, inputs : torch.Tensor):
+
+    def forward(self, inputs: torch.Tensor):
         """
         Parameters
         ----------
@@ -19,8 +18,8 @@ class Sequential(torch.nn.Sequential):
         -------
         The output tensor and the log-det-Jacobian of this transformation.
         """
-        
-        log_det_jacobian = 0.
+
+        log_det_jacobian = 0.0
         for i, module in enumerate(self._modules.values()):
             inputs, log_det_jacobian_ = module(inputs)
             log_det_jacobian = log_det_jacobian + log_det_jacobian_
@@ -29,10 +28,10 @@ class Sequential(torch.nn.Sequential):
 
 class BNAF(torch.nn.Sequential):
     """
-    Class that extends ``torch.nn.Sequential`` for constructing a Block Neural 
+    Class that extends ``torch.nn.Sequential`` for constructing a Block Neural
     Normalizing Flow.
     """
-    
+
     def __init__(self, *args, res: str = None):
         """
         Parameters
@@ -40,19 +39,19 @@ class BNAF(torch.nn.Sequential):
         *args : ``Iterable[torch.nn.Module]``, required.
             The modules to use.
         res : ``str``, optional (default = None).
-            Which kind of residual connection to use. ``res = None`` is no residual 
+            Which kind of residual connection to use. ``res = None`` is no residual
             connection, ``res = 'normal'`` is ``x + f(x)`` and ``res = 'gated'`` is
             ``a * x + (1 - a) * f(x)`` where ``a`` is a learnable parameter.
         """
-        
+
         super(BNAF, self).__init__(*args)
-        
+
         self.res = res
-        
-        if res == 'gated':
+
+        if res == "gated":
             self.gate = torch.nn.Parameter(torch.nn.init.normal_(torch.Tensor(1)))
-    
-    def forward(self, inputs : torch.Tensor):
+
+    def forward(self, inputs: torch.Tensor):
         """
         Parameters
         ----------
@@ -62,36 +61,39 @@ class BNAF(torch.nn.Sequential):
         -------
         The output tensor and the log-det-Jacobian of this transformation.
         """
-            
+
         outputs = inputs
         grad = None
-        
+
         for module in self._modules.values():
             outputs, grad = module(outputs, grad)
-                
+
             grad = grad if len(grad.shape) == 4 else grad.view(grad.shape + [1, 1])
-        
+
         assert inputs.shape[-1] == outputs.shape[-1]
-        
-        if self.res == 'normal':
-            return inputs + outputs, torch.nn.functional.softplus(grad.squeeze()).sum(-1)
-        elif self.res == 'gated':
-            return self.gate.sigmoid() * outputs + (1 - self.gate.sigmoid()) * inputs, \
-                (torch.nn.functional.softplus(grad.squeeze() + self.gate) - \
-                 torch.nn.functional.softplus(self.gate)).sum(-1)
+
+        if self.res == "normal":
+            return inputs + outputs, torch.nn.functional.softplus(grad.squeeze()).sum(
+                -1
+            )
+        elif self.res == "gated":
+            return self.gate.sigmoid() * outputs + (1 - self.gate.sigmoid()) * inputs, (
+                torch.nn.functional.softplus(grad.squeeze() + self.gate)
+                - torch.nn.functional.softplus(self.gate)
+            ).sum(-1)
         else:
             return outputs, grad.squeeze().sum(-1)
-        
+
     def _get_name(self):
-        return 'BNAF(res={})'.format(self.res)
-        
-        
+        return "BNAF(res={})".format(self.res)
+
+
 class Permutation(torch.nn.Module):
     """
     Module that outputs a permutation of its input.
     """
-    
-    def __init__(self, in_features : int, p : list = None):
+
+    def __init__(self, in_features: int, p: list = None):
         """
         Parameters
         ----------
@@ -99,22 +101,22 @@ class Permutation(torch.nn.Module):
             The number of input features.
         p : ``list`` or ``str``, optional (default = None)
             The list of indeces that indicate the permutation. When ``p`` is not a
-            list, if ``p = 'flip'``the tensor is reversed, if ``p = None`` a random 
+            list, if ``p = 'flip'``the tensor is reversed, if ``p = None`` a random
             permutation is applied.
         """
-        
+
         super(Permutation, self).__init__()
-        
+
         self.in_features = in_features
-        
+
         if p is None:
             self.p = np.random.permutation(in_features)
-        elif p == 'flip':
+        elif p == "flip":
             self.p = list(reversed(range(in_features)))
         else:
             self.p = p
-        
-    def forward(self, inputs : torch.Tensor):
+
+    def forward(self, inputs: torch.Tensor):
         """
         Parameters
         ----------
@@ -124,20 +126,22 @@ class Permutation(torch.nn.Module):
         -------
         The permuted tensor and the log-det-Jacobian of this permutation.
         """
-        
-        return inputs[:,self.p], 0
-    
+
+        return inputs[:, self.p], 0
+
     def __repr__(self):
-        return 'Permutation(in_features={}, p={})'.format(self.in_features, self.p)
-    
-    
+        return "Permutation(in_features={}, p={})".format(self.in_features, self.p)
+
+
 class MaskedWeight(torch.nn.Module):
     """
     Module that implements a linear layer with block matrices with positive diagonal blocks.
     Moreover, it uses Weight Normalization (https://arxiv.org/abs/1602.07868) for stability.
     """
-    
-    def __init__(self, in_features : int, out_features : int, dim : int, bias : bool = True):
+
+    def __init__(
+        self, in_features: int, out_features: int, dim: int, bias: bool = True
+    ):
         """
         Parameters
         ----------
@@ -150,57 +154,73 @@ class MaskedWeight(torch.nn.Module):
         bias : ``bool``, optional (default = True).
             Whether to add a parametrizable bias.
         """
-            
+
         super(MaskedWeight, self).__init__()
         self.in_features, self.out_features, self.dim = in_features, out_features, dim
 
         weight = torch.zeros(out_features, in_features)
         for i in range(dim):
-            weight[i * out_features // dim:(i + 1) * out_features // dim,
-                   0:(i + 1) * in_features // dim] = torch.nn.init.xavier_uniform_(
-                torch.Tensor(out_features // dim, (i + 1) * in_features // dim))
-            
+            weight[
+                i * out_features // dim : (i + 1) * out_features // dim,
+                0 : (i + 1) * in_features // dim,
+            ] = torch.nn.init.xavier_uniform_(
+                torch.Tensor(out_features // dim, (i + 1) * in_features // dim)
+            )
+
         self._weight = torch.nn.Parameter(weight)
-        self._diag_weight = torch.nn.Parameter(torch.nn.init.uniform_(torch.Tensor(out_features, 1)).log())
-        
-        self.bias = torch.nn.Parameter(
-            torch.nn.init.uniform_(torch.Tensor(out_features), 
-                                   -1 / math.sqrt(out_features),
-                                   1 / math.sqrt(out_features))) if bias else 0
-        
+        self._diag_weight = torch.nn.Parameter(
+            torch.nn.init.uniform_(torch.Tensor(out_features, 1)).log()
+        )
+
+        self.bias = (
+            torch.nn.Parameter(
+                torch.nn.init.uniform_(
+                    torch.Tensor(out_features),
+                    -1 / math.sqrt(out_features),
+                    1 / math.sqrt(out_features),
+                )
+            )
+            if bias
+            else 0
+        )
+
         mask_d = torch.zeros_like(weight)
         for i in range(dim):
-            mask_d[i * (out_features // dim):(i + 1) * (out_features // dim),
-                   i * (in_features // dim):(i + 1) * (in_features // dim)] = 1
+            mask_d[
+                i * (out_features // dim) : (i + 1) * (out_features // dim),
+                i * (in_features // dim) : (i + 1) * (in_features // dim),
+            ] = 1
 
-        self.register_buffer('mask_d', mask_d)
-            
+        self.register_buffer("mask_d", mask_d)
+
         mask_o = torch.ones_like(weight)
         for i in range(dim):
-            mask_o[i * (out_features // dim):(i + 1) * (out_features // dim),
-                   i * (in_features // dim):] = 0
-            
-        self.register_buffer('mask_o', mask_o)
+            mask_o[
+                i * (out_features // dim) : (i + 1) * (out_features // dim),
+                i * (in_features // dim) :,
+            ] = 0
+
+        self.register_buffer("mask_o", mask_o)
 
     def get_weights(self):
         """
         Computes the weight matrix using masks and weight normalization.
         It also compute the log diagonal blocks of it.
         """
-        
+
         w = torch.exp(self._weight) * self.mask_d + self._weight * self.mask_o
 
         w_squared_norm = (w ** 2).sum(-1, keepdim=True)
-        
+
         w = self._diag_weight.exp() * w / w_squared_norm.sqrt()
-        
-        wpl = self._diag_weight + self._weight - 0.5 * torch.log(w_squared_norm) 
+
+        wpl = self._diag_weight + self._weight - 0.5 * torch.log(w_squared_norm)
 
         return w.t(), wpl.t()[self.mask_d.bool().t()].view(
-            self.dim, self.in_features // self.dim, self.out_features // self.dim)
+            self.dim, self.in_features // self.dim, self.out_features // self.dim
+        )
 
-
-    def forward(self, inputs, grad : torch.Tensor = None):
+    def forward(self, inputs, grad: torch.Tensor = None):
         """
         Parameters
         ----------
@@ -210,29 +230,37 @@ class MaskedWeight(torch.nn.Module):
             The log diagonal block of the partial Jacobian of previous transformations.
         Returns
         -------
-        The output tensor and the log diagonal blocks of the partial log-Jacobian of previous 
+        The output tensor and the log diagonal blocks of the partial log-Jacobian of previous
         transformations combined with this transformation.
         """
-        
+
         w, wpl = self.get_weights()
-        
+
         g = wpl.transpose(-2, -1).unsqueeze(0).repeat(inputs.shape[0], 1, 1, 1)
-        
-        return inputs.matmul(w) + self.bias, torch.logsumexp(
-            g.unsqueeze(-2) + grad.transpose(-2, -1).unsqueeze(-3), -1) if grad is not None else g
+
+        return (
+            inputs.matmul(w) + self.bias,
+            torch.logsumexp(g.unsqueeze(-2) + grad.transpose(-2, -1).unsqueeze(-3), -1)
+            if grad is not None
+            else g,
+        )
 
     def __repr__(self):
-        return 'MaskedWeight(in_features={}, out_features={}, dim={}, bias={})'.format(
-            self.in_features, self.out_features, self.dim, not isinstance(self.bias, int))
+        return "MaskedWeight(in_features={}, out_features={}, dim={}, bias={})".format(
+            self.in_features,
+            self.out_features,
+            self.dim,
+            not isinstance(self.bias, int),
+        )
 
-    
+
 class Tanh(torch.nn.Tanh):
     """
     Class that extends ``torch.nn.Tanh`` additionally computing the log diagonal
     blocks of the Jacobian.
     """
 
-    def forward(self, inputs, grad : torch.Tensor = None):
+    def forward(self, inputs, grad: torch.Tensor = None):
         """
         Parameters
         ----------
@@ -242,10 +270,12 @@ class Tanh(torch.nn.Tanh):
             The log diagonal blocks of the partial Jacobian of previous transformations.
         Returns
         -------
-        The output tensor and the log diagonal blocks of the partial log-Jacobian of previous 
+        The output tensor and the log diagonal blocks of the partial log-Jacobian of previous
         transformations combined with this transformation.
         """
-        
-        g = - 2 * (inputs - math.log(2) + torch.nn.functional.softplus(- 2 * inputs))
-        return torch.tanh(inputs), (g.view(grad.shape) + grad) if grad is not None else g
-    
+
+        g = -2 * (inputs - math.log(2) + torch.nn.functional.softplus(-2 * inputs))
+        return (
+            torch.tanh(inputs),
+            (g.view(grad.shape) + grad) if grad is not None else g,
+        )

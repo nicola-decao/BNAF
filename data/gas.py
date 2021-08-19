@@ -3,9 +3,7 @@ import numpy as np
 
 
 class GAS:
-
     class Data:
-
         def __init__(self, data):
 
             self.x = data.astype(np.float32)

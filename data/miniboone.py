@@ -1,18 +1,15 @@
 import numpy as np
 
 
-
 class MINIBOONE:
-
     class Data:
-
         def __init__(self, data):
 
             self.x = data.astype(np.float32)
             self.N = self.x.shape[0]
 
     def __init__(self, file):
-        
+
         trn, val, tst = load_data_normalised(file)
 
         self.trn = self.Data(trn)

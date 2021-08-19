@@ -20,11 +20,11 @@ class BSDS300:
     def __init__(self, file):
 
         # load dataset
-        f = h5py.File(file, 'r')
+        f = h5py.File(file, "r")
 
-        self.trn = self.Data(f['train'])
-        self.val = self.Data(f['validation'])
-        self.tst = self.Data(f['test'])
+        self.trn = self.Data(f["train"])
+        self.val = self.Data(f["validation"])
+        self.tst = self.Data(f["test"])
 
         self.n_dims = self.trn.x.shape[1]
         self.image_size = [int(np.sqrt(self.n_dims + 1))] * 2
